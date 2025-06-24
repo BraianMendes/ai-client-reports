@@ -11,6 +11,19 @@ const { generatePDF } = require('./utils/pdf');
 
 const ANALYZE_API_URL = process.env.ANALYZE_API_URL || 'http://localhost:3001/analyze';
 
+function extractMessageText(msg) {
+    if (!msg.message) return null;
+    if (msg.message.conversation) return msg.message.conversation;
+    if (msg.message.extendedTextMessage?.text) return msg.message.extendedTextMessage.text;
+    if (msg.message.imageMessage?.caption) return msg.message.imageMessage.caption;
+    if (msg.message.videoMessage?.caption) return msg.message.videoMessage.caption;
+    if (msg.message.documentMessage?.caption) return msg.message.documentMessage.caption;
+    if (msg.message.audioMessage?.caption) return msg.message.audioMessage.caption;
+    if (msg.message.buttonsResponseMessage?.selectedButtonId) return msg.message.buttonsResponseMessage.selectedButtonId;
+    if (msg.message.listResponseMessage?.title) return msg.message.listResponseMessage.title;
+    return null;
+}
+
 async function startBot() {
     const { state, saveCreds } = await useMultiFileAuthState('auth_info');
     const sock = makeWASocket({ auth: state });
@@ -29,8 +42,10 @@ async function startBot() {
     sock.ev.on('messages.upsert', async ({ messages, type }) => {
         if (type !== 'notify') return;
         const msg = messages[0];
-        if (!msg.message?.conversation) return;
-        const userMsg = msg.message.conversation.trim();
+
+        const userMsgRaw = extractMessageText(msg);
+        if (!userMsgRaw) return;
+        const userMsg = userMsgRaw.trim();
 
         try {
             const response = await axios.post(ANALYZE_API_URL, { message: userMsg });
