@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import {
     Card, CardHeader, CardBody,
-    Button, Avatar, Spinner
+    Button, Spinner
 } from "@heroui/react";
 import { Send, User, Bot } from "lucide-react";
 

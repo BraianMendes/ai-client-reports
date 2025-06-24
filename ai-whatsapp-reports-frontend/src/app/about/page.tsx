@@ -1,5 +1,5 @@
 "use client";
-import { Card, CardHeader, Button } from "@heroui/react";
+import { Card, CardHeader } from "@heroui/react";
 import { Github } from "lucide-react";
 import Link from "next/link";
 

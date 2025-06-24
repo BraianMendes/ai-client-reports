@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     try {
         const response = await axios.post(backendUrl, { message });
         return NextResponse.json({ report: response.data.report });
-    } catch (error) {
+    } catch {
         return NextResponse.json(
             { error: 'Erro ao gerar relatório' },
             { status: 500 }
