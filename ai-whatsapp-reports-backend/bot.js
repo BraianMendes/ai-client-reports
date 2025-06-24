@@ -1,9 +1,15 @@
+require('dotenv').config();
+
 const axios = require('axios');
 const qrcode = require('qrcode-terminal');
 const fs = require('fs');
+const os = require('os');
+const path = require('path');
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
 const { Boom } = require('@hapi/boom');
-const { generatePDF } = require('./utils/pdf'); // utilitário de geração de PDF
+const { generatePDF } = require('./utils/pdf');
+
+const ANALYZE_API_URL = process.env.ANALYZE_API_URL || 'http://localhost:3001/analyze';
 
 async function startBot() {
     const { state, saveCreds } = await useMultiFileAuthState('auth_info');
@@ -27,21 +33,17 @@ async function startBot() {
         const userMsg = msg.message.conversation.trim();
 
         try {
-            // 1. Gera o relatório normalmente via IA
-            const response = await axios.post('http://localhost:3001/analyze', { message: userMsg });
+            const response = await axios.post(ANALYZE_API_URL, { message: userMsg });
             const reportText = response.data.report;
 
-            // 2. Envia a resposta em texto para o usuário
             await sock.sendMessage(msg.key.remoteJid, {
                 text: `${reportText}\n\nSe preferir, o PDF será enviado em seguida.`
             });
 
-            // 3. Gera o PDF temporário
             const filename = `report-${Date.now()}.pdf`;
-            const filepath = process.platform === 'win32' ? `./${filename}` : `/tmp/${filename}`;
+            const filepath = path.join(os.tmpdir(), filename);
             await generatePDF(reportText, filepath);
 
-            // 4. Envia o PDF como segunda mensagem
             await sock.sendMessage(msg.key.remoteJid, {
                 document: fs.readFileSync(filepath),
                 mimetype: 'application/pdf',
@@ -49,7 +51,6 @@ async function startBot() {
                 caption: 'Aqui está seu relatório em PDF!'
             });
 
-            // 5. Limpa o arquivo temporário (boa prática)
             fs.unlinkSync(filepath);
 
         } catch (error) {

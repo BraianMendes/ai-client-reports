@@ -1,4 +1,3 @@
-// server.js
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -10,6 +9,9 @@ app.use(express.json());
 app.use(cors());
 
 const PORT = process.env.PORT || 3001;
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
+const GROQ_URL = process.env.GROQ_URL || 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_MODEL = process.env.GROQ_MODEL || 'llama3-70b-8192';
 
 app.post('/analyze', async (req, res) => {
   const { message } = req.body;
@@ -22,16 +24,16 @@ ${message}
 
   try {
     const completion = await axios.post(
-      'https://api.groq.com/openai/v1/chat/completions',
+      GROQ_URL,
       {
-        model: 'llama3-70b-8192',
+        model: GROQ_MODEL,
         messages: [{ role: 'user', content: prompt }],
         max_tokens: 512,
         temperature: 0.7,
       },
       {
         headers: {
-          'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
+          'Authorization': `Bearer ${GROQ_API_KEY}`,
           'Content-Type': 'application/json',
         }
       }
