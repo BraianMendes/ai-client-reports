@@ -42,7 +42,7 @@ function CardContent({
 }: {
     children: ReactNode;
     className?: string;
-    [key: string]: any;
+    [key: string]: unknown;
 }) {
     return (
         <div className={`card-content ${className}`} {...props}>
