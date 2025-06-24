@@ -1,0 +1,62 @@
+# Raiz do projeto
+.env
+.env.*
+*.env.*
+*.pem
+.DS_Store
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.tsbuildinfo
+
+# Node.js/Express (backend)
+node_modules/
+build/
+dist/
+coverage/
+auth_info/
+*.sqlite
+*.sqlite3
+
+# Next.js (frontend)
+.next/
+out/
+.vercel/
+build/
+coverage/
+node_modules/
+*.tsbuildinfo
+
+# Arquivos temporários e de sistema
+*.swp
+*.swo
+*.tmp
+*.temp
+*.bak
+*.orig
+
+# Testes
+/coverage
+
+# IDEs e editores
+.vscode/
+.idea/
+*.code-workspace
+
+# Outros arquivos de cache
+.pnpm-debug.log*
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# Arquivos de produção
+/build
+
+# Arquivos de configuração locais
+*.local
