@@ -8,20 +8,52 @@ const path = require('path');
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
 const { Boom } = require('@hapi/boom');
 const { generatePDF } = require('./utils/pdf');
+const conversationContext = require('./utils/conversationContext');
 
 const ANALYZE_API_URL = process.env.ANALYZE_API_URL || 'http://localhost:3001/analyze';
 
 function extractMessageText(msg) {
-    if (!msg.message) return null;
-    if (msg.message.conversation) return msg.message.conversation;
-    if (msg.message.extendedTextMessage?.text) return msg.message.extendedTextMessage.text;
-    if (msg.message.imageMessage?.caption) return msg.message.imageMessage.caption;
-    if (msg.message.videoMessage?.caption) return msg.message.videoMessage.caption;
-    if (msg.message.documentMessage?.caption) return msg.message.documentMessage.caption;
-    if (msg.message.audioMessage?.caption) return msg.message.audioMessage.caption;
-    if (msg.message.buttonsResponseMessage?.selectedButtonId) return msg.message.buttonsResponseMessage.selectedButtonId;
-    if (msg.message.listResponseMessage?.title) return msg.message.listResponseMessage.title;
-    return null;
+    if (!msg.message) return { content: null, type: 'empty' };
+    
+    const hasMedia = !!(
+        msg.message.imageMessage || 
+        msg.message.videoMessage || 
+        msg.message.audioMessage || 
+        msg.message.documentMessage ||
+        msg.message.stickerMessage
+    );
+
+    let content = null;
+    let mediaType = 'unknown';
+
+    if (msg.message.conversation) {
+        content = msg.message.conversation;
+    } else if (msg.message.extendedTextMessage?.text) {
+        content = msg.message.extendedTextMessage.text;
+    } else if (msg.message.imageMessage) {
+        content = msg.message.imageMessage.caption || null;
+        mediaType = 'image';
+    } else if (msg.message.videoMessage) {
+        content = msg.message.videoMessage.caption || null;
+        mediaType = 'video';
+    } else if (msg.message.documentMessage) {
+        content = msg.message.documentMessage.caption || null;
+        mediaType = 'document';
+    } else if (msg.message.audioMessage) {
+        content = msg.message.audioMessage.caption || null;
+        mediaType = 'audio';
+    } else if (msg.message.buttonsResponseMessage?.selectedButtonId) {
+        content = msg.message.buttonsResponseMessage.selectedButtonId;
+    } else if (msg.message.listResponseMessage?.title) {
+        content = msg.message.listResponseMessage.title;
+    }
+
+    return {
+        content,
+        hasMedia,
+        mediaType,
+        type: hasMedia ? 'media' : (content ? 'text' : 'empty')
+    };
 }
 
 async function startBot() {
@@ -43,12 +75,63 @@ async function startBot() {
         if (type !== 'notify') return;
         const msg = messages[0];
 
-        const userMsgRaw = extractMessageText(msg);
-        if (!userMsgRaw) return;
-        const userMsg = userMsgRaw.trim();
+        const extractedMessage = extractMessageText(msg);
+        if (!extractedMessage) return;
+
+        const userId = msg.key.remoteJid;
+        
+        if (!conversationContext.isUserAllowed(userId)) {
+            await sock.sendMessage(userId, { 
+                text: "🚫 Acesso não autorizado. Este bot é restrito a usuários específicos." 
+            });
+            return;
+        }
+
+        const rateLimitCheck = conversationContext.checkRateLimit(userId);
+        if (!rateLimitCheck.allowed) {
+            await sock.sendMessage(userId, { 
+                text: `⏱️ Muitas mensagens! Aguarde ${rateLimitCheck.timeUntilReset} segundos antes de enviar outra mensagem.` 
+            });
+            return;
+        }
 
         try {
-            const response = await axios.post(ANALYZE_API_URL, { message: userMsg });
+            if (extractedMessage.hasMedia && !extractedMessage.content) {
+                const mediaResponse = conversationContext.getMediaResponse(extractedMessage.mediaType);
+                await sock.sendMessage(userId, { text: mediaResponse });
+                return;
+            }
+
+            if (!extractedMessage.content || extractedMessage.content.trim().length === 0) {
+                await sock.sendMessage(userId, { 
+                    text: "🤔 Não consegui entender sua mensagem. Por favor, envie uma pergunta ou solicite uma análise empresarial em texto." 
+                });
+                return;
+            }
+
+            const userMsg = extractedMessage.content.trim();
+            
+            const lengthValidation = conversationContext.validateMessageLength(userMsg);
+            if (!lengthValidation.valid) {
+                await sock.sendMessage(userId, { 
+                    text: `📏 ${lengthValidation.reason}. Sua mensagem tem ${userMsg.length} caracteres.` 
+                });
+                return;
+            }
+
+            const messageType = conversationContext.detectMessageType(userMsg, extractedMessage.hasMedia);
+            
+            if (messageType === 'empty') {
+                await sock.sendMessage(userId, { 
+                    text: "📝 Por favor, envie uma mensagem com conteúdo para que eu possa ajudá-lo com análises empresariais ou consultoria." 
+                });
+                return;
+            }
+
+            const response = await axios.post(ANALYZE_API_URL, { 
+                message: userMsg,
+                userId: userId 
+            });
             const reportText = response.data.report;
 
             await sock.sendMessage(msg.key.remoteJid, {
@@ -69,8 +152,18 @@ async function startBot() {
             fs.unlinkSync(filepath);
 
         } catch (error) {
-            await sock.sendMessage(msg.key.remoteJid, { text: 'Erro ao gerar relatório. Tente novamente.' });
-            console.error(error.response?.data || error.message);
+            let errorMessage = 'Erro ao gerar relatório. Tente novamente.';
+            
+            if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
+                errorMessage = '🔌 Problema de conexão com nossos serviços. Tente novamente em alguns momentos.';
+            } else if (error.response?.status === 429) {
+                errorMessage = '⏱️ Muitas solicitações. Aguarde alguns segundos antes de tentar novamente.';
+            } else if (error.response?.status >= 500) {
+                errorMessage = '⚙️ Nossos serviços estão temporariamente indisponíveis. Tente novamente em breve.';
+            }
+            
+            await sock.sendMessage(msg.key.remoteJid, { text: errorMessage });
+            console.error('Erro no processamento:', error.response?.data || error.message);
         }
     });
 }

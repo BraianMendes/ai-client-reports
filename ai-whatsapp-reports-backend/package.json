@@ -1,14 +1,35 @@
 {
-  "name": "ai-whatsapp-reports",
+  "name": "ai-whatsapp-reports-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "Sistema de geração automática de relatórios empresariais via WhatsApp com Inteligência Artificial",
   "license": "ISC",
   "author": "BraianMendes",
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "keywords": [
+    "whatsapp",
+    "ai",
+    "chatbot",
+    "business-reports",
+    "groq",
+    "llama",
+    "baileys",
+    "nodejs",
+    "express"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-username/ai-whatsapp-reports-backend.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/ai-whatsapp-reports-backend/issues"
+  },
+  "homepage": "https://github.com/your-username/ai-whatsapp-reports-backend#readme",
   "dependencies": {
     "@whiskeysockets/baileys": "^6.7.18",
     "axios": "^1.10.0",
