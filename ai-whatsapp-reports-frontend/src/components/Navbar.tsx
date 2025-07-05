@@ -1,8 +1,8 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Github } from "lucide-react";
 import { Button } from "@heroui/react";
+import { Github } from "lucide-react";
 
 const navLinks = [
     { href: "/", label: "Home" },
@@ -28,7 +28,6 @@ export default function NavBar() {
       "
             style={{ minHeight: 48 }}
         >
-            {/* Branding e navegação */}
             <div className="flex items-center gap-3">
                 <Link
                     href="/"
@@ -57,22 +56,28 @@ export default function NavBar() {
                     ))}
                 </div>
             </div>
-            {/* Botão Github */}
-            <Link
-                href="https://github.com/BraianMendes"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Github"
-                className="flex items-center"
-            >
+            <div className="flex items-center">
                 <Button
-                    variant="ghost"
-                    className="flex items-center gap-1 text-neutral-300 px-3 py-1 rounded-xl hover:text-white hover:bg-neutral-800/70 transition shadow-none cursor-pointer"
+                    as={Link}
+                    href="https://github.com/BraianMendes/ai-client-reports"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    variant="bordered"
+                    className="
+                        flex items-center gap-2
+                        text-white border-neutral-600 
+                        hover:border-blue-400 hover:text-blue-400 hover:bg-blue-400/10
+                        transition-all duration-200
+                        px-4 py-2 
+                        rounded-full
+                        text-sm font-medium
+                        backdrop-blur-sm
+                    "
                 >
-                    <Github className="w-4 h-4" strokeWidth={2} />
-                    <span className="hidden md:inline">Github</span>
+                    <Github className="w-4 h-4" />
+                    GitHub
                 </Button>
-            </Link>
+            </div>
         </nav>
     );
 }

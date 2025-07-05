@@ -1,5 +1,4 @@
-// tailwind.config.js
-const {heroui} = require("@heroui/react");
+import { heroui } from "@heroui/react";
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {

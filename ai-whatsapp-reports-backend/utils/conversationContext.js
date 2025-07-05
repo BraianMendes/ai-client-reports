@@ -109,7 +109,6 @@ class ConversationContext {
         
         const cleanedContent = this.validateAndCleanContent(content, messageType);
         if (!cleanedContent) {
-            console.log(`Mensagem ignorada para ${userId}: conteúdo inválido ou vazio`);
             return null;
         }
         
@@ -304,7 +303,6 @@ class ConversationContext {
         for (const [userId, session] of this.sessions) {
             if (now - session.lastActivity > this.SESSION_TIMEOUT) {
                 this.sessions.delete(userId);
-                console.log(`Sessão expirada removida: ${userId}`);
             }
         }
     }
