@@ -9,6 +9,7 @@ const navLinks = [
     { href: "/reports", label: "Reports" },
     { href: "/history", label: "History" },
     { href: "/chat", label: "AI Chat" },
+    { href: "/rag", label: "RAG" },
     { href: "/about", label: "About" },
 ];
 

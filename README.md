@@ -1,20 +1,21 @@
 # AI Client Reports
 
-Um bot do WhatsApp que gera relatórios de negócios usando IA, com uma interface web para visualizar e gerenciar os relatórios.
+A WhatsApp bot that generates business reports using AI, with a web interface to visualize and manage reports. Now enhanced with RAG (Retrieval-Augmented Generation) for knowledge-based responses.
 
-## O que é isso?
+## What is this?
 
-Basicamente, você pode pedir análises de empresas tanto via WhatsApp quanto por uma interface web. O bot usa IA (Groq/LLaMA) para gerar relatórios de negócios e você pode baixar em PDF.
+Basically, you can ask for company analysis both via WhatsApp and through a web interface. The bot uses AI (Groq/LLaMA) enhanced with a RAG system to generate business reports and insights based on your uploaded documents. You can download everything as PDF.
 
-**Por que fiz isso?** Queria uma forma rápida de gerar análises de empresas sem ter que abrir várias abas ou aplicativos. O WhatsApp tá sempre na mão, então por que não usar?
+**Why did I build this?** I wanted a quick way to generate company analysis without having to open multiple tabs or applications. WhatsApp is always at hand, and now with RAG, the bot can use your own knowledge base to provide more accurate and contextual responses.
 
-## Como funciona
+## How it works
 
-- **WhatsApp Bot**: Manda "analisa a Tesla" e recebe um relatório completo
-- **Interface Web**: Versão mais completa com histórico e templates
-- **API**: Liga tudo junto e faz a mágica acontecer
+- **WhatsApp Bot**: Send "analyze Tesla" and get a complete report enhanced with your knowledge base
+- **Web Interface**: More complete version with history, templates, and RAG document management
+- **RAG System**: Upload documents to build your own knowledge base that enriches AI responses
+- **API**: Connects everything together and makes the magic happen
 
-## Arquitetura
+## Architecture
 
 ```mermaid
 graph TB
@@ -25,217 +26,300 @@ graph TB
     E --> F[Groq AI API]
     E --> G[Context Management]
     E --> H[PDF Generation]
+    E --> K[RAG System]
+    K --> L[Vector Store]
+    K --> M[Document Processing]
+    K --> N[Knowledge Base]
     G --> I[Session Storage]
     H --> J[File Export]
+    F --> K
 ```
 
-**Componentes:**
-- **Frontend (Next.js)**: Interface web com React 19, TypeScript, TailwindCSS
-- **Backend (Node.js)**: Servidor Express com integração WhatsApp via Baileys
-- **AI Layer**: Groq LLaMA 3 70B para análises inteligentes
-- **Storage**: Gerenciamento de sessão em memória (banco planejado)
-- **Export**: Geração de PDF no cliente e servidor
+**Components:**
+- **Frontend (Next.js)**: Web interface with React 19, TypeScript, TailwindCSS
+- **Backend (Node.js)**: Express server with WhatsApp integration via Baileys
+- **AI Layer**: Groq LLaMA 3 70B for intelligent analysis
+- **RAG System**: Document processing, embeddings, and vector search for enhanced responses
+- **Storage**: In-memory session management (database planned)
+- **Export**: PDF generation on client and server
 
-## O que dá pra fazer
+## What you can do
 
-### No WhatsApp
-- Conversar naturalmente: "Como está a Amazon financeiramente?"
-- Pedir análises específicas: "Faz uma análise SWOT da Netflix"
-- Contexto mantido: pode continuar a conversa normalmente
+### On WhatsApp
+- Chat naturally: "How is Amazon doing financially?"
+- Ask for specific analysis: "Do a SWOT analysis of Netflix"
+- Context maintained: you can continue the conversation normally
+- **RAG-enhanced responses**: The bot uses your uploaded documents to provide more accurate answers
 
-### Na Web
-- Gerar relatórios com templates prontos
-- Ver histórico de tudo que já foi gerado
-- Chat direto com a IA
-- Baixar PDFs organizados
+### On the Web
+- Generate reports with ready-made templates
+- See history of everything that was generated
+- Direct chat with AI
+- **Document Management**: Upload PDFs, Word docs, text files to build your knowledge base
+- **RAG Explorer**: Search through your documents and see how they enhance responses
+- Download organized PDFs
 
-### Funcionalidades
-- Suporte a português e inglês
-- Memória de conversa (10 mensagens)
-- Rate limiting pra não quebrar a API
-- PDFs gerados automaticamente
+### Features
+- Support for Portuguese and English
+- Conversation memory (10 messages)
+- Rate limiting to avoid breaking the API
+- Automatically generated PDFs
+- **RAG System**: Upload documents (PDF, DOCX, TXT, MD, HTML, JSON) to enhance AI responses
+- **Vector Search**: Semantic search through your knowledge base
+- **Smart Context**: AI responses are enriched with relevant information from your documents
 
-## Stack Técnico
+## Tech Stack
 
 **Backend (Node.js)**
-- Express.js para a API REST
-- @whiskeysockets/baileys para integração WhatsApp
-- Groq API (LLaMA 3 70B) para IA
-- PDFKit para gerar PDFs no servidor
+- Express.js for REST API
+- @whiskeysockets/baileys for WhatsApp integration
+- Groq API (LLaMA 3 70B) for AI
+- PDFKit for server-side PDF generation
+- **RAG System**: Custom implementation with vector embeddings and semantic search
 
 **Frontend (Next.js)**
 - React 19 + TypeScript
-- TailwindCSS + HeroUI para UI
-- jsPDF para PDFs no cliente
-- Lucide React para ícones
+- TailwindCSS + HeroUI for UI
+- jsPDF for client-side PDFs
+- Lucide React for icons
 
-**Por que essas escolhas?**
-- **Groq**: Mais rápido que OpenAI e mais barato
-- **Baileys**: Biblioteca mais estável para WhatsApp Web
-- **Next.js**: SSR e performance out-of-the-box
-- **HeroUI**: Componentes bonitos sem reinventar a roda
+**Why these choices?**
+- **Groq**: Faster than OpenAI and cheaper
+- **Baileys**: Most stable library for WhatsApp Web
+- **Next.js**: SSR and performance out-of-the-box
+- **HeroUI**: Beautiful components without reinventing the wheel
+- **Custom RAG**: Tailored for business documents and analysis needs
 
-## Como rodar
+## How to run
 
-**Pré-requisitos:**
+**Prerequisites:**
 - Node.js 18+
-- Conta na Groq (é gratuita)
-- WhatsApp (óbvio)
+- Groq account (it's free)
+- WhatsApp (obviously)
 
-**Passo a passo:**
+**Step by step:**
 
-1. **Clone o projeto**
+1. **Clone the project**
 ```bash
 git clone https://github.com/BraianMendes/ai-client-reports
 cd ai-client-reports
 ```
 
-2. **Backend**
+2. **Install all dependencies**
+```bash
+npm run install:all
+# or manually:
+# cd ai-whatsapp-reports-backend && npm install
+# cd ../ai-whatsapp-reports-frontend && npm install
+```
+
+3. **Backend setup**
 ```bash
 cd ai-whatsapp-reports-backend
-npm install
 cp .env.example .env
-# Edita o .env com sua GROQ_API_KEY
-npm start
+# Edit .env with your GROQ_API_KEY
 ```
 
-3. **Frontend** (novo terminal)
+4. **Frontend setup**
 ```bash
 cd ai-whatsapp-reports-frontend
-npm install
-npm run dev
+cp .env.local.example .env.local
+# Edit .env.local with backend URL (usually http://localhost:3001)
 ```
 
-4. **Conectar WhatsApp**
-- Vai aparecer um QR code no terminal do backend
-- Escaneia com seu WhatsApp
-- Pronto!
+5. **Start development**
+```bash
+# From project root
+npm run dev
+# This starts both backend and frontend
+```
 
-5. **Testar**
+6. **Connect WhatsApp**
+- A QR code will appear in the backend terminal
+- Scan it with your WhatsApp
+- Done!
+
+7. **Test the system**
 - Web: http://localhost:3000
-- WhatsApp: manda qualquer mensagem pro número conectado
+- WhatsApp: send any message to the connected number
+- **RAG**: Go to http://localhost:3000/rag to upload documents and test knowledge-based responses
 
-## Como usar
+## How to use
 
 ### Via WhatsApp
 ```
-Você: analisa a Tesla
-Bot: [relatório completo sobre Tesla]
+You: analyze Tesla
+Bot: [complete report about Tesla, enhanced with your uploaded documents]
 
-Você: e o marketing deles?
-Bot: [análise focada em marketing, mantendo contexto]
+You: what about their marketing?
+Bot: [marketing-focused analysis, maintaining context and using RAG knowledge]
 ```
 
 ### Via Web
-1. Acessa http://localhost:3000
-2. Clica em "Generate Report"
-3. Escolhe template ou escreve livre
-4. Baixa o PDF
+1. Go to http://localhost:3000
+2. **Upload documents**: Visit /rag to build your knowledge base
+3. Click "Generate Report" or use the Chat
+4. Choose template or write freely
+5. Download PDF
 
-### API (se quiser integrar)
+### RAG System
+1. **Upload documents**: Go to http://localhost:3000/rag
+2. **Upload files**: PDF, DOCX, TXT, MD, HTML, JSON supported
+3. **Test search**: Use the search feature to see how documents are indexed
+4. **Enhanced chat**: All chat responses now use your knowledge base automatically
+
+### API (if you want to integrate)
 ```bash
+# Regular analysis
 curl -X POST http://localhost:3001/analyze \
   -H "Content-Type: application/json" \
-  -d '{"message": "analisa a Apple", "userId": "test"}'
+  -d '{"message": "analyze Apple", "userId": "test"}'
+
+# RAG endpoints
+curl -X GET http://localhost:3001/rag/stats
+curl -X POST http://localhost:3001/rag/search \
+  -H "Content-Type: application/json" \
+  -d '{"query": "financial performance", "topK": 5}'
 ```
 
-## Configuração
+## Configuration
 
-**Variáveis do Backend (.env):**
+**Backend variables (.env):**
 ```env
-GROQ_API_KEY=sua_chave_aqui          # Obrigatório
-GROQ_MODEL=llama3-70b-8192           # Opcional
-PORT=3001                            # Opcional
+GROQ_API_KEY=your_key_here             # Required
+GROQ_MODEL=llama3-70b-8192             # Optional
+PORT=3001                              # Optional
 ```
 
-**Variáveis do Frontend (.env.local):**
+**Frontend variables (.env.local):**
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:3001  # URL do backend
+NEXT_PUBLIC_API_URL=http://localhost:3001  # Backend URL
 ```
 
-**Configurações de segurança** (em `backend/utils/conversationContext.js`):
-- Session timeout: 30 minutos
-- Rate limit: 10 mensagens por minuto
-- Contexto: máximo 10 mensagens guardadas
-- Tamanho da mensagem: 2-500 caracteres (WhatsApp), 2-2000 (Web)
+**Security settings** (in `backend/utils/conversationContext.js`):
+- Session timeout: 30 minutes
+- Rate limit: 10 messages per minute
+- Context: maximum 10 messages stored
+- Message size: 2-500 characters (WhatsApp), 2-2000 (Web)
 
-## Limitações atuais
+**RAG settings**:
+- Supported file types: PDF, DOCX, TXT, MD, HTML, JSON
+- Max file size: 10MB
+- Vector similarity threshold: 0.4 (configurable)
+- Context length: 1500 characters per relevant document
 
-**Coisas que ainda não funcionam bem:**
-- Sessões são perdidas quando reinicia o servidor (sem banco de dados ainda)
-- Só funciona com um número de WhatsApp por vez
-- PDFs poderiam ser mais bonitos
-- Não analisa imagens ou documentos enviados
-- Performance cai com muitos usuários simultâneos
+## Current limitations
 
-**Dependências externas:**
-- Groq API (se cair, o bot para)
-- WhatsApp Web (precisa de conexão estável)
-- Internet (óbvio, mas é bom lembrar)
+**Things that don't work well yet:**
+- Sessions are lost when server restarts (no database yet)
+- Only works with one WhatsApp number at a time
+- PDFs could be prettier
+- RAG system is in-memory only (vectors lost on restart)
+- Performance drops with many simultaneous users
+- Document processing is synchronous (can be slow for large files)
 
-## Próximos passos
+**External dependencies:**
+- Groq API (if it goes down, the bot stops)
+- WhatsApp Web (needs stable connection)
+- Internet (obvious, but good to remember)
 
-**Em desenvolvimento:**
-- [ ] Banco de dados para persistir histórico
-- [ ] Melhorar design dos PDFs
-- [ ] Upload e análise de imagens/documentos
-- [ ] Templates mais variados
+## Next steps
 
-**Se der tempo:**
-- [ ] Suporte a mais idiomas
-- [ ] Integração com Slack/Discord
-- [ ] Dashboard com estatísticas
-- [ ] API para terceiros
+**In development:**
+- [ ] Database for persistent history and RAG vectors
+- [ ] Improve PDF design
+- [ ] Async document processing with progress indicators
+- [ ] More file format support (images, audio transcription)
+- [ ] More varied templates
 
-## Contribuindo
+**If I have time:**
+- [ ] Support for more languages
+- [ ] Slack/Discord integration
+- [ ] Dashboard with statistics
+- [ ] Public API for third parties
+- [ ] Advanced RAG features (document summarization, auto-tagging)
 
-Se quiser ajudar:
-1. Faz um fork
-2. Cria uma branch: `git checkout -b minha-feature`
-3. Commita: `git commit -m "feat: nova feature incrível"`
-4. Abre PR
+## Contributing
 
-**Áreas que precisam de ajuda:**
-- Frontend: melhorar UX/UI
-- Backend: otimização e banco de dados
-- DevOps: containerização e deploy
-- Docs: mais exemplos e tutoriais
+If you want to help:
+1. Fork it
+2. Create a branch: `git checkout -b my-feature`
+3. Commit: `git commit -m "feat: amazing new feature"`
+4. Open PR
 
-## Estrutura do projeto
+**Areas that need help:**
+- Frontend: improve UX/UI, especially RAG interface
+- Backend: optimization and database integration
+- RAG: better document processing and vector storage
+- DevOps: containerization and deployment
+- Docs: more examples and tutorials
+
+## Project structure
 
 ```
 ai-client-reports/
-├── ai-whatsapp-reports-backend/    # API + Bot WhatsApp
-│   ├── index.js                   # Servidor Express
-│   ├── bot.js                     # Lógica do bot
-│   └── utils/                     # Funções auxiliares
-├── ai-whatsapp-reports-frontend/   # Interface web
-│   ├── src/app/                   # Páginas (App Router)
-│   ├── src/components/            # Componentes React
-│   └── public/                    # Assets estáticos
-└── README.md                      # Este arquivo
+├── ai-whatsapp-reports-backend/     # API + WhatsApp Bot
+│   ├── index.js                    # Express server
+│   ├── bot.js                      # Bot logic
+│   ├── utils/                      # Helper functions
+│   │   ├── ragService.js           # RAG system logic
+│   │   ├── vectorStore.js          # Vector storage
+│   │   ├── embeddings.js           # Text embeddings
+│   │   └── documentProcessor.js    # Document parsing
+│   └── scripts/                    # Utility scripts
+├── ai-whatsapp-reports-frontend/    # Web interface
+│   ├── src/app/                    # Pages (App Router)
+│   │   ├── rag/                    # RAG management page
+│   │   └── chat/                   # Enhanced chat with RAG
+│   ├── src/components/             # React components
+│   │   └── RAGExplorer.tsx         # RAG interface component
+│   └── public/                     # Static assets
+├── scripts/                        # Development utilities
+└── README.md                       # This file
 ```
 
 ## FAQ
 
-**P: Posso usar com meu número comercial?**
-R: Sim, mas teste primeiro. O WhatsApp pode desconectar se detectar uso automatizado.
+**Q: Can I use this with my business number?**
+A: Yes, but test it first. WhatsApp might disconnect if it detects automated usage.
 
-**P: Quanto custa a API da Groq?**
-R: Tem tier gratuito generoso. Depois é tipo $0.59/1M tokens.
+**Q: How much does the Groq API cost?**
+A: There's a generous free tier. After that it's about $0.59/1M tokens.
 
-**P: Funciona offline?**
-R: Não, precisa de internet para IA e WhatsApp Web.
+**Q: Does it work offline?**
+A: No, it needs internet for AI and WhatsApp Web.
 
-**P: Posso customizar os relatórios?**
-R: Sim, editando os prompts no código ou criando templates na web.
+**Q: Can I customize the reports?**
+A: Yes, by editing prompts in the code or creating templates on the web.
 
-## Licença
+**Q: What file formats does RAG support?**
+A: PDF, DOCX, TXT, MD, HTML, and JSON files up to 10MB each.
 
-ISC - basicamente faz o que quiser, só não me processa se quebrar algo.
+**Q: How does RAG enhance the responses?**
+A: When you ask a question, the system searches through your uploaded documents for relevant information and includes it in the AI's context, making responses more accurate and specific to your knowledge base.
+
+**Q: Are my documents stored securely?**
+A: Currently documents are processed and stored in memory only. For production use, implement proper database storage with encryption.
+
+## Available Scripts
+
+The project includes several utility scripts in the `scripts/` folder:
+
+- `npm run dev` - Start both frontend and backend in development mode
+- `npm run install:all` - Install dependencies for both projects
+- `npm run menu` - Open interactive menu with all options
+- `npm run test:rag` - Test RAG functionality
+- `scripts/start-dev.bat` - Windows batch script for development setup
+- `scripts/start-prod.bat` - Windows batch script for production
+
+Run `npm run menu` for an interactive selection of all available commands.
+
+## License
+
+ISC - basically do whatever you want, just don't sue me if something breaks.
 
 ---
 
-**Feito com ☕ e algumas noites em claro**
+**Made with ☕ and some sleepless nights**
 
-*Se achou útil, deixa uma ⭐ no repo!*
+*If you found this useful, leave a ⭐ on the repo!*

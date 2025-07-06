@@ -1,0 +1,24 @@
+{
+  "name": "ai-client-reports",
+  "version": "1.0.0",
+  "description": "AI Client Reports - Full Stack Application",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd ai-whatsapp-reports-backend && npm run dev",
+    "dev:frontend": "cd ai-whatsapp-reports-frontend && npm run dev",
+    "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+    "start:backend": "cd ai-whatsapp-reports-backend && npm start",
+    "start:frontend": "cd ai-whatsapp-reports-frontend && npm start",
+    "install:all": "scripts\\install.bat",
+    "setup:dev": "scripts\\start-dev.bat",
+    "setup:prod": "scripts\\start-prod.bat",
+    "test:rag": "cd ai-whatsapp-reports-backend && npm run test-rag",
+    "test:rag-script": "scripts\\test-rag.bat",
+    "populate:rag": "cd ai-whatsapp-reports-backend && npm run populate-rag",
+    "menu": "scripts\\run.bat"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

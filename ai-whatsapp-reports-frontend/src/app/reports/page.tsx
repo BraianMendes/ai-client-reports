@@ -26,7 +26,7 @@ const PROMPT_TEMPLATES = [
 
 const OUTPUT_LANGUAGES = [
     { code: "en", name: "English" },
-    { code: "pt", name: "Português" },
+    { code: "pt", name: "Portuguese" },
 ];
 
 const OUTPUT_FORMATS = [
