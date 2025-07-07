@@ -32,7 +32,8 @@ export default function RAGManagementPage() {
   const [isAddingKnowledge, setIsAddingKnowledge] = useState(false)
   const [notification, setNotification] = useState<{ type: 'success' | 'error', message: string } | null>(null)
 
-  const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'
+  // Use local API routes instead of direct backend access (fixes HTTPS/HTTP mixed content)
+  const API_BASE = '/api'
 
   // Load statistics when component mounts
   useEffect(() => {
