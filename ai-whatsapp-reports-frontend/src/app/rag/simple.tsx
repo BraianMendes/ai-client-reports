@@ -13,7 +13,7 @@ export default function RAGManagementPageSimple() {
     searchKnowledge,
     addKnowledge,
     uploadFiles,
-    clearRAG
+    clearKnowledge
   } = useRAG()
 
   const [searchQuery, setSearchQuery] = useState('')
@@ -95,7 +95,7 @@ export default function RAGManagementPageSimple() {
     }
 
     try {
-      await clearRAG()
+      await clearKnowledge()
       showNotification('success', 'Knowledge base cleared successfully!')
       await loadStats()
     } catch {

@@ -1,139 +1,161 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import {
-    Card, CardHeader, CardBody,
-    Button, Spinner
-} from "@heroui/react";
-import { Send, User, Bot } from "lucide-react";
-
-interface Message {
-    role: "user" | "assistant";
-    content: string;
-}
+import { Button, Input } from "@heroui/react";
+import { Send, User, Bot, Trash2 } from "lucide-react";
+import { useChat } from "@/hooks/useChat";
+import { useNotification } from "@/hooks/useNotification";
+import Loading from "@/components/Loading";
+import Notification from "@/components/Notification";
+import Card from "@/components/Card";
 
 export default function ChatScreen() {
     const [input, setInput] = useState("");
-    const [messages, setMessages] = useState<Message[]>([
-        { role: "assistant", content: "Hello! I'm your AI assistant. How can I help you today?" }
-    ]);
-    const [loading, setLoading] = useState(false);
     const bottomRef = useRef<HTMLDivElement | null>(null);
     const messagesContainerRef = useRef<HTMLDivElement | null>(null);
+    
+    const { messages, isLoading, sendMessage, clearChat } = useChat();
+    const { notification, showNotification, hideNotification } = useNotification();
 
     useEffect(() => {
         if (messagesContainerRef.current) {
             messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
         }
-    }, [messages, loading]);
+    }, [messages, isLoading]);
 
-    async function handleSend() {
-        if (!input.trim()) return;
-        const userMessage: Message = { role: "user", content: input.trim() };
-        setMessages((prev) => [...prev, userMessage]);
+    const handleSend = async () => {
+        if (!input.trim() || isLoading) return;
+        
+        const messageContent = input.trim();
         setInput("");
-        setLoading(true);
-
+        
         try {
-            const res = await fetch("/api/analyze", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: input.trim() }),
-            });
-            const data = await res.json();
-            setMessages((prev) => [
-                ...prev,
-                { role: "assistant", content: data.report || data.error || "Erro ao gerar resposta." }
-            ]);
-        } catch (err) {
-            console.error("Error while fetching AI response:", err);
-            setMessages((prev) => [
-                ...prev,
-                { role: "assistant", content: "Connection error with the server. Please try again later." }
-            ]);
+            await sendMessage(messageContent);
+        } catch {
+            showNotification('error', 'Failed to send message. Please try again.');
         }
-        setLoading(false);
-    }
+    };
 
-    function handleInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-        if (e.key === "Enter") handleSend();
-    }
+    const handleKeyPress = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
+        }
+    };
+
+    const handleClearChat = () => {
+        clearChat();
+        showNotification('success', 'Chat cleared successfully!');
+    };
 
     return (
-        <main className="min-h-screen w-full flex flex-col items-center justify-center bg-[#101010] px-2">
-            <Card className="w-full max-w-3xl mt-14 mb-10 flex flex-col rounded-t-2xl rounded-b-3xl shadow-xl bg-neutral-900">
-                <CardHeader className="px-6 pt-2 pb-2 border-b border-neutral-800 flex flex-col items-start">
-                    <h1 className="text-2xl font-bold text-white">AI Chat</h1>
-                    <p className="text-neutral-400 text-sm mt-0">
-                        Interactive chat with your AI assistant
-                    </p>
-                </CardHeader>
-                <CardBody className="flex-1 overflow-y-auto p-6 space-y-4 max-h-[60vh]">
-                    <div ref={messagesContainerRef} className="flex flex-col space-y-4">
-                        {messages.map((msg, idx) => (
+        <div className="min-h-screen w-full bg-black flex flex-col p-4 md:p-8">
+            {notification && (
+                <Notification
+                    type={notification.type}
+                    message={notification.message}
+                    onClose={hideNotification}
+                />
+            )}
+            
+            <div className="w-full max-w-4xl mx-auto flex flex-col flex-1 mt-16">
+                <div className="flex items-center justify-between mb-6">
+                    <h1 className="text-3xl font-bold text-white">AI Chat</h1>
+                    <Button
+                        onClick={handleClearChat}
+                        variant="bordered"
+                        className="text-red-400 border-red-400 hover:bg-red-400/10"
+                        startContent={<Trash2 className="w-4 h-4" />}
+                    >
+                        Clear Chat
+                    </Button>
+                </div>
+
+                <Card className="flex-1 flex flex-col p-0 overflow-hidden">
+                    <div
+                        ref={messagesContainerRef}
+                        className="flex-1 overflow-y-auto p-6 space-y-4"
+                        style={{ maxHeight: "60vh" }}
+                    >
+                        {messages.map((message) => (
                             <div
-                                key={idx}
-                                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                                key={message.id}
+                                className={`flex items-start gap-3 ${
+                                    message.role === "user" ? "flex-row-reverse" : ""
+                                }`}
                             >
-                                {msg.role === "assistant" && (
-                                    <span className="mr-3 flex items-center justify-center rounded-full bg-blue-900 w-8 h-8">
-                                        <Bot size={20} className="text-blue-300" />
-                                    </span>
-                                )}
                                 <div
-                                    className={`rounded-xl px-4 py-2 text-base whitespace-pre-line max-w-[70%]
-                                    ${msg.role === "user"
-                                        ? "bg-blue-600 text-white rounded-br-sm"
-                                        : "bg-neutral-800 text-neutral-100 rounded-bl-sm"
+                                    className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                        message.role === "user"
+                                            ? "bg-blue-600"
+                                            : "bg-neutral-700"
                                     }`}
                                 >
-                                    {msg.content}
+                                    {message.role === "user" ? (
+                                        <User className="w-4 h-4 text-white" />
+                                    ) : (
+                                        <Bot className="w-4 h-4 text-white" />
+                                    )}
                                 </div>
-                                {msg.role === "user" && (
-                                    <span className="ml-3 flex items-center justify-center rounded-full bg-neutral-700 w-8 h-8">
-                                        <User size={20} className="text-neutral-300" />
-                                    </span>
-                                )}
+                                <div
+                                    className={`max-w-[80%] p-3 rounded-2xl ${
+                                        message.role === "user"
+                                            ? "bg-blue-600 text-white"
+                                            : "bg-neutral-800 text-neutral-100"
+                                    }`}
+                                >
+                                    <p className="text-sm whitespace-pre-wrap">
+                                        {message.content}
+                                    </p>
+                                    {message.timestamp && (
+                                        <p className="text-xs opacity-70 mt-1">
+                                            {new Date(message.timestamp).toLocaleTimeString()}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
                         ))}
-                        {loading && (
-                            <div className="flex justify-start items-center">
-                                <span className="mr-3 flex items-center justify-center rounded-full bg-blue-900 w-8 h-8">
-                                    <Bot size={20} className="text-blue-300" />
-                                </span>
-                                <div className="rounded-xl px-4 py-2 bg-neutral-800 text-neutral-400 flex items-center">
-                                    <Spinner size="sm" className="mr-2" /> Generating response...
+                        
+                        {isLoading && (
+                            <div className="flex items-start gap-3">
+                                <div className="w-8 h-8 rounded-full bg-neutral-700 flex items-center justify-center flex-shrink-0">
+                                    <Bot className="w-4 h-4 text-white" />
+                                </div>
+                                <div className="bg-neutral-800 p-3 rounded-2xl">
+                                    <Loading size="sm" label="AI is thinking..." />
                                 </div>
                             </div>
                         )}
+                        
                         <div ref={bottomRef} />
                     </div>
-                </CardBody>
-                <form
-                    className="flex gap-2 px-6 py-4 border-t border-neutral-800 bg-neutral-900 sticky bottom-0 rounded-b-3xl"
-                    onSubmit={e => { e.preventDefault(); handleSend(); }}
-                >
-                    <input
-                        type="text"
-                        placeholder="Type your message..."
-                        className="flex-1 bg-neutral-800 border border-neutral-700 focus:border-blue-600 focus:ring-2 focus:ring-blue-500/40 text-white rounded-xl outline-none shadow-none transition-all px-4 py-2"
-                        value={input}
-                        onChange={e => setInput(e.target.value)}
-                        onKeyDown={handleInputKeyDown}
-                        disabled={loading}
-                        autoFocus
-                    />
-                    <Button
-                        type="submit"
-                        size="lg"
-                        className="flex gap-2 items-center px-5 py-2 rounded-xl font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all duration-150 border-2 border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                        disabled={loading || !input.trim()}
-                        variant="solid"
-                    >
-                        <Send size={18} />
-                        Send
-                    </Button>
-                </form>
-            </Card>
-        </main>
+
+                    <div className="border-t border-neutral-800 p-4">
+                        <div className="flex gap-2">
+                            <Input
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                onKeyPress={handleKeyPress}
+                                placeholder="Type your message here..."
+                                className="flex-1"
+                                variant="bordered"
+                                classNames={{
+                                    input: "text-white",
+                                    inputWrapper: "bg-neutral-900 border-neutral-700 hover:border-neutral-600"
+                                }}
+                                disabled={isLoading}
+                            />
+                            <Button
+                                onClick={handleSend}
+                                disabled={!input.trim() || isLoading}
+                                className="bg-blue-600 hover:bg-blue-500 text-white px-4"
+                                isIconOnly
+                            >
+                                <Send className="w-4 h-4" />
+                            </Button>
+                        </div>
+                    </div>
+                </Card>
+            </div>
+        </div>
     );
 }

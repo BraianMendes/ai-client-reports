@@ -3,15 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@heroui/react";
 import { Github } from "lucide-react";
-
-const navLinks = [
-    { href: "/", label: "Home" },
-    { href: "/reports", label: "Reports" },
-    { href: "/history", label: "History" },
-    { href: "/chat", label: "AI Chat" },
-    { href: "/rag", label: "RAG" },
-    { href: "/about", label: "About" },
-];
+import { NAV_LINKS, GITHUB_REPO_URL, APP_CONFIG } from "@/constants";
 
 export default function NavBar() {
     const pathname = usePathname();
@@ -35,10 +27,10 @@ export default function NavBar() {
                     className="text-white text-base font-semibold tracking-tight mr-3 select-none"
                     style={{ letterSpacing: "-0.03em" }}
                 >
-                    AI Client Report
+                    {APP_CONFIG.name}
                 </Link>
                 <div className="flex gap-0.5 md:gap-1">
-                    {navLinks.map((link) => (
+                    {NAV_LINKS.map((link) => (
                         <Button
                             key={link.href}
                             variant={pathname === link.href ? "solid" : "ghost"}
@@ -60,7 +52,7 @@ export default function NavBar() {
             <div className="flex items-center">
                 <Button
                     as={Link}
-                    href="https://github.com/BraianMendes/ai-client-reports"
+                    href={GITHUB_REPO_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     variant="bordered"
