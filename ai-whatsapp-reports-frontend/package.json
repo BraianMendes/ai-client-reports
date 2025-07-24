@@ -15,7 +15,7 @@
     "@heroui/react": "^2.7.11",
     "@heroui/system": "^2.4.18",
     "@heroui/theme": "^2.4.17",
-    "axios": "^1.10.0", 
+    "axios": "^1.11.0", 
     "framer-motion": "^12.18.1",
     "jspdf": "^3.0.1",
     "lucide-react": "^0.522.0",
