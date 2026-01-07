@@ -41,7 +41,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
-    "langchain": "^0.3.29",
+    "langchain": "^0.3.37",
     "mammoth": "^1.9.1",
     "multer": "^2.0.2",
     "node-html-parser": "^7.0.1",
